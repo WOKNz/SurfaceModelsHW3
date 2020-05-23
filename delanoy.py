@@ -1,247 +1,263 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 class Point():
-	def __init__(self, x, y):
+	def __init__(self, x, y, id=None):
 		self.x = x
 		self.y = y
+		self.id = id
 
 	def __str__(self):
-		return '(X:' + str(self.x) + ' Y:' + str(self.y) + ')'
+		if self.id is None:
+			return '(' + str(self.x) + ',' + str(self.y) + ')'
+		else:
+			return str(self.id) + ' (' + str(self.x) + ',' + str(self.y) + ')'
 
 	@staticmethod
 	def npArrayToListOfPoints(points):
+		id_index = 0
 		temp_list = []
+		if points is None:
+			return
 		for row in range(points.shape[0]):
-			temp_list.append(Point(points[row, 0], points[row, 1]))
+			temp_list.append(Point(points[row, 0], points[row, 1], id='P' + str(id_index)))
+			id_index = id_index + 1
 		return temp_list
 
 
 class Triangle():
-	def __init__(self, p1, p2, p3):
+	def __init__(self, p1, p2, p3, tri_p1=None, tri_p2=None, tri_p3=None, id=None):
 		self.p1 = p1
 		self.p2 = p2
 		self.p3 = p3
-		self.triangle_infront_p1 = None
-		self.triangle_infront_p2 = None
-		self.triangle_infront_p3 = None
+		self.tri_p1 = tri_p1
+		self.tri_p2 = tri_p2
+		self.tri_p3 = tri_p3
+		self.id = id
 
 	def __str__(self):
-		return self.p1.__str__() + self.p2.__str__() + self.p3.__str__()
-
-	def getCornersAsList(self):
-		return [self.p1, self.p2, self.p3]
-
-	def getOpositesAsList(self):
-		return [self.triangle_infront_p1,
-		        self.triangle_infront_p2,
-		        self.triangle_infront_p3]
-
-	def getAngle(self, point):
-		if point is self.p1:
-			a = np.array([self.p2.x, self.p2.y])
-			b = np.array([self.p1.x, self.p1.y])
-			c = np.array([self.p3.x, self.p3.y])
-
-			ba = a - b
-			bc = c - b
-
-			cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
-			angle = np.arccos(cosine_angle)
-
-			return angle
-		elif point is self.p2:
-			a = np.array([self.p1.x, self.p1.y])
-			b = np.array([self.p2.x, self.p1.y])
-			c = np.array([self.p3.x, self.p3.y])
-
-			ba = a - b
-			bc = c - b
-
-			cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
-			angle = np.arccos(cosine_angle)
-
-			return angle
-		elif point is self.p3:
-			a = np.array([self.p1.x, self.p1.y])
-			b = np.array([self.p3.x, self.p3.y])
-			c = np.array([self.p2.x, self.p2.y])
-
-			ba = a - b
-			bc = c - b
-
-			cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
-			angle = np.arccos(cosine_angle)
-
-			return angle
+		if self.id is None:
+			return self.p1.__str__() + ',' + self.p2.__str__() + ',' + self.p3.__str__()
 		else:
-			print('error calculating angle')
+			return str(self.id) + \
+			       ' (' + \
+			       str(self.p1.id) + \
+			       ',' + \
+			       str(self.p2.id) + \
+			       ',' + \
+			       str(self.p3.id) + ']'
 
-	def getOposite(self, point, new_opposite_triangle=None, set_new_opposite_triangle=None):
-		if point is None:
-			return None
-		tot = None  # Opposite triengle
-		if self.p1 is point:
-			tot = self.triangle_infront_p1
-		if self.p2 is point:
-			tot = self.triangle_infront_p2
-		if self.p3 is point:
-			tot = self.triangle_infront_p3
-		if tot is None:
-			return None
-		if tot.p1 is not self.p1 and \
-				tot.p1 is not self.p2 and \
-				tot.p1 is not self.p3:
-			return tot.p1
-		if tot.p2 is not self.p1 and \
-				tot.p3 is not self.p2 and \
-				tot.p3 is not self.p3:
-			return tot.p2
-		if tot.p3 is not self.p1 and \
-				tot.p3 is not self.p2 and \
-				tot.p3 is not self.p3:
-			return tot.p3
+	def match(self, point):
 
-	def inCircle(self, point):
-		opposite = self.getOposite(point)
-		if opposite is None:
+		def oposite(self):
+			if self.tri_p1 is None:
+				return None
+			ot = self.tri_p1  # Opposite Triangle
+			if ot.p1 is not self.p2 and ot.p1 is not self.p3:
+				return ot.p1
+			if ot.p2 is not self.p2 and ot.p2 is not self.p3:
+				return ot.p2
+			if ot.p3 is not self.p2 and ot.p2 is not self.p3:
+				return ot.p3
+
+		# Set p1 in self to be interest point
+		if point is self.p2:
+			self.p1, self.p2 = self.p2, self.p1
+			self.tri_p1, self.tri_p2 = self.tri_p2, self.tri_p1
+		if point is self.p3:
+			self.p1, self.p3 = self.p3, self.p1
+			self.tri_p1, self.tri_p3 = self.tri_p3, self.tri_p1
+
+		op = oposite(self)  # Opposite point
+		if op is not None:
+			# Set p1 in other to be interest point
+			if op is self.tri_p1.p2:
+				self.tri_p1.p1, self.tri_p1.p2 = self.tri_p1.p2, self.tri_p1.p1
+				self.tri_p1.tri_p1, self.tri_p1.tri_p2 = self.tri_p1.tri_p2, self.tri_p1.tri_p1
+			if op is self.tri_p1.p3:
+				self.tri_p1.p1, self.tri_p1.p3 = self.tri_p1.p3, self.tri_p1.p1
+				self.tri_p1.tri_p1, self.tri_p1.tri_p3 = self.tri_p1.tri_p3, self.tri_p1.tri_p1
+
+			# Matching other two points
+			if self.p2 is self.tri_p1.p3:
+				self.tri_p1.p2, self.tri_p1.p3 = self.tri_p1.p3, self.tri_p1.p2
+				self.tri_p1.tri_p2, self.tri_p1.tri_p3 = self.tri_p1.tri_p3, self.tri_p1.tri_p2
+
+	def flip(self, point):
+
+		def updateInFrontOfInfrontTriangle(self, point_str, triangle_to_set):
+			if point_str == 'p1':
+				if self.tri_p1 is None:
+					return
+				if self.tri_p1.p1 is not self.p2 and \
+						self.tri_p1.p1 is not self.p3:
+					self.tri_p1.tri_p1 = triangle_to_set
+				elif self.tri_p1.p2 is not self.p2 and \
+						self.tri_p1.p2 is not self.p3:
+					self.tri_p1.tri_p2 = triangle_to_set
+				elif self.tri_p1.p3 is not self.p2 and \
+						self.tri_p1.p3 is not self.p3:
+					self.tri_p1.tri_p3 = triangle_to_set
+				else:
+					print('Failed to update infront of infront triangle')
+			if point_str == 'p2':
+				if self.tri_p2 is None:
+					return
+				if self.tri_p2.p1 is not self.p1 and \
+						self.tri_p2.p1 is not self.p3:
+					self.tri_p2.tri_p1 = triangle_to_set
+				elif self.tri_p2.p2 is not self.p1 and \
+						self.tri_p2.p2 is not self.p3:
+					self.tri_p2.tri_p2 = triangle_to_set
+				elif self.tri_p2.p3 is not self.p1 and \
+						self.tri_p2.p3 is not self.p3:
+					self.tri_p2.tri_p3 = triangle_to_set
+				else:
+					print('Failed to update infront of infront triangle')
+			if point_str == 'p3':
+				if self.tri_p3 is None:
+					return
+				if self.tri_p3.p1 is not self.p2 and \
+						self.tri_p3.p1 is not self.p1:
+					self.tri_p3.tri_p1 = triangle_to_set
+				elif self.tri_p3.p2 is not self.p2 and \
+						self.tri_p3.p2 is not self.p1:
+					self.tri_p3.tri_p2 = triangle_to_set
+				elif self.tri_p3.p3 is not self.p2 and \
+						self.tri_p3.p3 is not self.p1:
+					self.tri_p3.tri_p3 = triangle_to_set
+				else:
+					print('Failed to update infront of infront triangle')
+
+		self.match(point)
+
+		thisTri = self
+		otherTri = self.tri_p1
+
+		# Updating outer triangles
+
+		updateInFrontOfInfrontTriangle(thisTri, 'p2', otherTri)
+		updateInFrontOfInfrontTriangle(otherTri, 'p3', thisTri)
+
+		a = thisTri.tri_p3
+		b = otherTri.tri_p3
+		c = thisTri.tri_p2
+		d = otherTri.tri_p2
+
+		thisTri.tri_p1 = b
+		thisTri.tri_p2 = otherTri
+		otherTri.tri_p1 = c
+		otherTri.tri_p3 = thisTri
+
+		thisTri.p3 = otherTri.p1
+		otherTri.p2 = thisTri.p1
+
+	def isInCircle(self, point):
+
+		def oposite(self):  # Repeated code, make sure you use after match()
+			if self.tri_p1 is None:
+				return None
+			ot = self.tri_p1  # Opposite Triangle
+			if ot.p1 is not self.p2 and ot.p1 is not self.p3:
+				return ot.p1
+			if ot.p2 is not self.p2 and ot.p2 is not self.p3:
+				return ot.p2
+			if ot.p3 is not self.p2 and ot.p2 is not self.p3:
+				return ot.p3
+
+		op = oposite(self)
+
+		if op is None:
 			return False
-		temp_mat = np.array([[self.p1.x, self.p1.y, self.p1.x ** 2, self.p1.y ** 2],
-		                     [self.p2.x, self.p2.y, self.p2.x ** 2, self.p2.y ** 2],
-		                     [self.p3.x, self.p3.y, self.p3.x ** 2, self.p3.y ** 2],
-		                     [opposite.x, opposite.y, opposite.x ** 2, opposite.y ** 2]])
-		if np.linalg.det(temp_mat) >= 0:
+
+		def ccw(self):
+			temp_mat = np.array([[self.p2.x, self.p2.y, 1],
+			                     [self.p1.x, self.p1.y, 1],
+			                     [self.p3.x, self.p3.y, 1]])
+			det = np.linalg.det(temp_mat)
+			if det > 0:
+				return True
+			elif det == 0:
+				print('The ', self.__str__(), ' have no area, all points on same line')
+				return True
+			else:
+				return False
+
+		temp_mat = None
+		if ccw(self):
+			temp_mat = np.array([[self.p2.x, self.p2.y, self.p2.x ** 2 + self.p2.y ** 2, 1],
+			                     [self.p1.x, self.p1.y, self.p1.x ** 2 + self.p1.y ** 2, 1],
+			                     [self.p3.x, self.p3.y, self.p3.x ** 2 + self.p3.y ** 2, 1],
+			                     [op.x, op.y, op.x ** 2 + op.y ** 2, 1]])
+		else:
+			temp_mat = np.array([[self.p3.x, self.p3.y, self.p3.x ** 2 + self.p3.y ** 2, 1],
+			                     [self.p1.x, self.p1.y, self.p1.x ** 2 + self.p1.y ** 2, 1],
+			                     [self.p2.x, self.p2.y, self.p2.x ** 2 + self.p2.y ** 2, 1],
+			                     [op.x, op.y, op.x ** 2 + op.y ** 2, 1]])
+
+		if np.linalg.det(temp_mat) > 0:
 			return True
 		else:
 			return False
 
-	@staticmethod
-	def updateTriangle(triangle, triangle_to_update, new_triangle):
-		if triangle.triangle_infront_p1 is triangle_to_update:
-			triangle.triangle_infront_p1 = new_triangle
-		elif triangle.triangle_infront_p2 is triangle_to_update:
-			triangle.triangle_infront_p2 = new_triangle
-		elif triangle.triangle_infront_p3 is triangle_to_update:
-			triangle.triangle_infront_p3 = new_triangle
+	def isFlip(self, point):
+		self.match(point)
+		if self.isInCircle(point):
+			self.flip(point)
+			return 1
 		else:
-			print('no triangle to update')
-
-	#
-	# def updateCorner(self, corner_to_update, new_corner):
-	#
-	# 	if self.p1 is corner_to_update:
-	# 		self.p1 = new_corner
-	# 	elif self.p2 is corner_to_update:
-	# 		self.p2 = new_corner
-	# 	elif self.p3 is corner_to_update:
-	# 		self.p3 = new_corner
-	# 	else:
-	# 		print('no corner to update')
-	def oppositCorner(self, point):
-		if self.p1 is point:
-			if self.triangle_infront_p1 is not None:
-				if self.triangle_infront_p1.p1 is not self.p2 and self.triangle_infront_p1.p1 is not self.p3:
-					return self.triangle_infront_p1.p1
-				if self.triangle_infront_p1.p2 is not self.p2 and self.triangle_infront_p1.p2 is not self.p3:
-					return self.triangle_infront_p1.p2
-				if self.triangle_infront_p1.p3 is not self.p2 and self.triangle_infront_p1.p3 is not self.p3:
-					return self.triangle_infront_p1.p3
-			else:
-				return None
-		if self.p2 is point:
-			if self.triangle_infront_p2 is not None:
-				if self.triangle_infront_p2.p1 is not self.p1 and self.triangle_infront_p2.p1 is not self.p3:
-					return self.triangle_infront_p2.p1
-				if self.triangle_infront_p2.p2 is not self.p1 and self.triangle_infront_p2.p2 is not self.p3:
-					return self.triangle_infront_p2.p2
-				if self.triangle_infront_p2.p3 is not self.p1 and self.triangle_infront_p2.p3 is not self.p3:
-					return self.triangle_infront_p2.p3
-			else:
-				return None
-		if self.p3 is point:
-			if self.triangle_infront_p3 is not None:
-				if self.triangle_infront_p3.p1 is not self.p2 and self.triangle_infront_p3.p1 is not self.p1:
-					return self.triangle_infront_p3.p1
-				if self.triangle_infront_p3.p2 is not self.p2 and self.triangle_infront_p3.p2 is not self.p1:
-					return self.triangle_infront_p3.p2
-				if self.triangle_infront_p3.p3 is not self.p2 and self.triangle_infront_p3.p3 is not self.p1:
-					return self.triangle_infront_p3.p3
-			else:
-				return None
-
-	def opositeTriange(self, point):
-		if self.p1 is point:
-			return self.triangle_infront_p1
-		if self.p2 is point:
-			return self.triangle_infront_p2
-		if self.p3 is point:
-			return self.triangle_infront_p3
-
-	def flip(self, other_triangle):
-
-		if other_triangle is None:
 			return 0
-		N = self
-		O = other_triangle
 
-		# Make p1 to be point A (close point) (self triangle)
-		if N.p2 is not O.p1 and \
-				N.p2 is not O.p2 and \
-				N.p2 is not O.p3:
-			N.p1, N.p2 = N.p2, N.p1
-			N.triangle_infront_p1, N.triangle_infront_p2 = N.triangle_infront_p2, \
-			                                               N.triangle_infront_p1
-		elif N.p3 is not O.p1 and \
-				N.p3 is not O.p2 and \
-				N.p3 is not O.p3:
-			N.p1, N.p3 = N.p3, N.p1
-			N.triangle_infront_p1, N.triangle_infront_p3 = N.triangle_infront_p3, \
-			                                               N.triangle_infront_p1
-
-		# Make p3 to be point B (far point) (other triangle)
-		if O.p2 is not N.p1 and \
-				O.p2 is not N.p2 and \
-				O.p2 is not N.p3:
-			O.p3, O.p2 = O.p2, O.p3
-			O.triangle_infront_p3, O.triangle_infront_p2 = O.triangle_infront_p2, \
-			                                               O.triangle_infront_p3
-		elif O.p1 is not N.p1 and \
-				O.p1 is not N.p2 and \
-				O.p1 is not N.p3:
-			O.p3, O.p1 = O.p1, O.p3
-			O.triangle_infront_p3, O.triangle_infront_p1 = O.triangle_infront_p1, \
-			                                               O.triangle_infront_p3
-
-		# Make N.p2 to be other.p1
-		if N.p2 is not O.p1:
-			O.p1, O.p2 = O.p2, O.p1
-			O.triangle_infront_p1, O.triangle_infront_p2 = O.triangle_infront_p2, \
-			                                               O.triangle_infront_p1
-
-		A = N.triangle_infront_p3
-		B = O.triangle_infront_p2
-		C = N.triangle_infront_p2
-		D = O.triangle_infront_p1
-		N.triangle_infront_p2 = O
-		N.triangle_infront_p1 = B
-		O.triangle_infront_p2 = N
-		O.triangle_infront_p3 = C
-		if B is not None:
-			self.updateTriangle(B, O, N)
-		if C is not None:
-			self.updateTriangle(C, N, O)
-		N.p3 = O.p3
-		O.p1 = N.p1
-		return 1
-
+	def updateInFrontOfInfrontTriangle(self, point_str, triangle_to_set):  # Repeated Code
+		if point_str == 'p1':
+			if self.tri_p1 is None:
+				return
+			if self.tri_p1.p1 is not self.p2 and \
+					self.tri_p1.p1 is not self.p3:
+				self.tri_p1.tri_p1 = triangle_to_set
+			elif self.tri_p1.p2 is not self.p2 and \
+					self.tri_p1.p2 is not self.p3:
+				self.tri_p1.tri_p2 = triangle_to_set
+			elif self.tri_p1.p3 is not self.p2 and \
+					self.tri_p1.p3 is not self.p3:
+				self.tri_p1.tri_p3 = triangle_to_set
+			else:
+				print('Failed to update infront of infront triangle')
+		if point_str == 'p2':
+			if self.tri_p2 is None:
+				return
+			if self.tri_p2.p1 is not self.p1 and \
+					self.tri_p2.p1 is not self.p3:
+				self.tri_p2.tri_p1 = triangle_to_set
+			elif self.tri_p2.p2 is not self.p1 and \
+					self.tri_p2.p2 is not self.p3:
+				self.tri_p2.tri_p2 = triangle_to_set
+			elif self.tri_p2.p3 is not self.p1 and \
+					self.tri_p2.p3 is not self.p3:
+				self.tri_p2.tri_p3 = triangle_to_set
+			else:
+				print('Failed to update infront of infront triangle')
+		if point_str == 'p3':
+			if self.tri_p3 is None:
+				return
+			if self.tri_p3.p1 is not self.p2 and \
+					self.tri_p3.p1 is not self.p1:
+				self.tri_p3.tri_p1 = triangle_to_set
+			elif self.tri_p3.p2 is not self.p2 and \
+					self.tri_p3.p2 is not self.p1:
+				self.tri_p3.tri_p2 = triangle_to_set
+			elif self.tri_p3.p3 is not self.p2 and \
+					self.tri_p3.p3 is not self.p1:
+				self.tri_p3.tri_p3 = triangle_to_set
+			else:
+				print('Failed to update infront of infront triangle')
 
 class DelaunoyTriangulation():
 	def __init__(self, points):
 		self.j = 0
-		self.points = points
-		self.points_obj_list = Point.npArrayToListOfPoints(points)
+		self.points = Point.npArrayToListOfPoints(points)
 		self.triangles = None
+
 		# Bounding box dimensionsz
 		width = np.max(points[:, 0]) - np.min(points[:, 0])
 		higth = np.max(points[:, 1]) - np.min(points[:, 1])
@@ -252,130 +268,141 @@ class DelaunoyTriangulation():
 		y_c = np.average(points[:, 1])
 
 		# Corners of covering triangle
-		self.p1 = Point(x_c + 3 * M, y_c)
-		self.p2 = Point(x_c, y_c + 3 * M)
-		self.p3 = Point(x_c - 3 * M, y_c - 3 * M)
-		# self.p1 = Point(120,0)
-		# self.p2 = Point(0,120)
-		# self.p3 = Point(-120,-120)
-		self.triangles = [Triangle(self.p1, self.p2, self.p3)]
+		self.big_tri_p1 = Point(x_c + 3 * M, y_c, id='B1')
+		self.big_tri_p2 = Point(x_c, y_c + 3 * M, id='B2')
+		self.big_tri_p3 = Point(x_c - 3 * M, y_c - 3 * M, id='B3')
+		self.triangles = [Triangle(self.big_tri_p1,
+		                           self.big_tri_p2,
+		                           self.big_tri_p3,
+		                           id='T0')]
 
-		# plt.scatter(points[:,0], points[:,1], color='blue')
-		# plt.scatter([self.p1.x,self.p2.x,self.p3.x],
-		#             [self.p1.y,self.p2.y,self.p3.y], color='red')
-		# plt.show()
-
-		for point in self.points_obj_list:
-			# self.plotDiagramm()
+		for point in self.points:
 			self.split(point, self.inWhichTriangle(point))
-		# # self.plotDiagramm()
-		# self.checkFlip(self.triangles[-1],self.triangles[-1].oppositCorner(point))
-		# # self.plotDiagramm()
-		# self.checkFlip(self.triangles[-2],self.triangles[-2].oppositCorner(point))
-		# # self.plotDiagramm()
-		# self.checkFlip(self.triangles[-3],self.triangles[-3].oppositCorner(point))
-		# # self.plotDiagramm()
 
+		self.fixTriangulation()
+		self.cleanOutter()
+
+	def split(self, pointA, triangle):
+		if triangle is None:
+			return
+		temp_trianle1A2 = Triangle(triangle.p1, pointA, triangle.p2)
+		temp_trianle2A3 = Triangle(triangle.p2, pointA, triangle.p3)
+		temp_trianle3A1 = Triangle(triangle.p3, pointA, triangle.p1)
+
+		temp_trianle1A2.tri_p1 = temp_trianle2A3
+		temp_trianle1A2.tri_p3 = temp_trianle3A1
+		temp_trianle2A3.tri_p1 = temp_trianle3A1
+		temp_trianle2A3.tri_p3 = temp_trianle1A2
+		temp_trianle3A1.tri_p1 = temp_trianle1A2
+		temp_trianle3A1.tri_p3 = temp_trianle2A3
+
+		temp_trianle1A2.tri_p2 = triangle.tri_p3
+		temp_trianle2A3.tri_p2 = triangle.tri_p1
+		temp_trianle3A1.tri_p2 = triangle.tri_p2
+
+		temp_trianle1A2.updateInFrontOfInfrontTriangle('p2', temp_trianle1A2)
+		temp_trianle2A3.updateInFrontOfInfrontTriangle('p2', temp_trianle2A3)
+		temp_trianle3A1.updateInFrontOfInfrontTriangle('p2', temp_trianle3A1)
+
+		self.triangles.extend([temp_trianle1A2, temp_trianle2A3, temp_trianle3A1])
+		self.triangles.remove(triangle)
+
+	def fixTriangulation(self):
 		stop = 1
 		while stop > 0:
 			stop = 0
+			# self.plotDiagramm(0.2)
 			for triangle in self.triangles:
-				stop = stop + self.checkFlip(triangle, triangle.p1)
-				stop = stop + self.checkFlip(triangle, triangle.p2)
-				stop = stop + self.checkFlip(triangle, triangle.p3)
+				stop = stop + triangle.isFlip(triangle.p1)
+				# self.plotDiagramm(0.2)
+				stop = stop + triangle.isFlip(triangle.p2)
+				# self.plotDiagramm(0.2)
+				stop = stop + triangle.isFlip(triangle.p3)
+		# self.plotDiagramm(0.2)
 
-		self.plotDiagramm('beforeclean')
+	@staticmethod
+	def isInsideTriangle(point, triangle):
 
-		max_len = len(self.triangles)
-		triangles_to_keep = []
-
-		for i in range(0, max_len):
-			if self.p1 is self.triangles[i].p1 or \
-					self.p1 is self.triangles[i].p2 or \
-					self.p1 is self.triangles[i].p3 or \
-					self.p2 is self.triangles[i].p1 or \
-					self.p2 is self.triangles[i].p2 or \
-					self.p2 is self.triangles[i].p3 or \
-					self.p3 is self.triangles[i].p1 or \
-					self.p3 is self.triangles[i].p2 or \
-					self.p3 is self.triangles[i].p3:
-				continue
+		def ccw(pA, pB, pC):  # Repeated code
+			temp_mat = np.array([[pA.x, pA.y, 1],
+			                     [pB.x, pB.y, 1],
+			                     [pC.x, pC.y, 1]])
+			det = np.linalg.det(temp_mat)
+			if det > 0:
+				return True
+			elif det == 0:
+				print('all points on same line')
+				return True
 			else:
-				if len(self.triangles) > 0:
-					triangles_to_keep.append(self.triangles[i])
-		self.triangles = triangles_to_keep
-		self.plotDiagramm('afterclean')
+				return False
 
-	def isInsideTriangle(self, point, triangle):
-		Dx, Dy = point.x, point.y
-		Ax, Ay = triangle.p1.x, triangle.p1.y
-		Bx, By = triangle.p2.x, triangle.p2.y
-		Cx, Cy = triangle.p3.x, triangle.p3.y
-
-		M1 = np.array([[Dx - Bx, Dy - By, 0],
-		               [Ax - Bx, Ay - By, 0],
-		               [1, 1, 1]
-		               ])
-
-		M2 = np.array([[Dx - Ax, Dy - Ay, 0],
-		               [Cx - Ax, Cy - Ay, 0],
-		               [1, 1, 1]
-		               ])
-
-		M3 = np.array([[Dx - Cx, Dy - Cy, 0],
-		               [Bx - Cx, By - Cy, 0],
-		               [1, 1, 1]
-		               ])
-
-		M1 = np.linalg.det(M1)
-		M2 = np.linalg.det(M2)
-		M3 = np.linalg.det(M3)
-
-		if (M1 == 0 or M2 == 0 or M3 == 0):
-			print("Point: ", point, " lies on the arms of Triangle")
-			return True
-		elif ((M1 > 0 and M2 > 0 and M3 > 0) or (M1 < 0 and M2 < 0 and M3 < 0)):
+		if (ccw(triangle.p1, triangle.p2, point) and \
+		    ccw(triangle.p2, triangle.p3, point) and \
+		    ccw(triangle.p3, triangle.p1, point)) or \
+				(not ccw(triangle.p1, triangle.p2, point) and \
+				 not ccw(triangle.p2, triangle.p3, point) and \
+				 not ccw(triangle.p3, triangle.p1, point)):
 			return True
 		else:
 			return False
 
 	def inWhichTriangle(self, point):
 		for triangle in self.triangles:
-			if self.isInsideTriangle(point, triangle):
+			if DelaunoyTriangulation.isInsideTriangle(point, triangle):
 				return triangle
 
-	def checkFlip(self, new_triangle, point):
-		if point is None or new_triangle is None:
-			return 0
-		if new_triangle.inCircle(point):
-			return new_triangle.flip(new_triangle.opositeTriange(point))
-		return 0
+	def cleanOutter(self):
+		max_len = len(self.triangles)
+		triangles_to_keep = []
 
-	def split(self, pointA, triangle):
-		temp_trianle1A2 = Triangle(triangle.p1, pointA, triangle.p2)
-		temp_trianle2A3 = Triangle(triangle.p2, pointA, triangle.p3)
-		temp_trianle3A1 = Triangle(triangle.p3, pointA, triangle.p1)
+		for i in range(0, max_len):
+			if self.big_tri_p1 is self.triangles[i].p1 or \
+					self.big_tri_p1 is self.triangles[i].p2 or \
+					self.big_tri_p1 is self.triangles[i].p3 or \
+					self.big_tri_p2 is self.triangles[i].p1 or \
+					self.big_tri_p2 is self.triangles[i].p2 or \
+					self.big_tri_p2 is self.triangles[i].p3 or \
+					self.big_tri_p3 is self.triangles[i].p1 or \
+					self.big_tri_p3 is self.triangles[i].p2 or \
+					self.big_tri_p3 is self.triangles[i].p3:
+				continue
+			else:
+				if len(self.triangles) > 0:
+					triangles_to_keep.append(self.triangles[i])
+		self.triangles = triangles_to_keep
 
-		temp_trianle1A2.triangle_infront_p1 = temp_trianle2A3
-		temp_trianle1A2.triangle_infront_p3 = temp_trianle3A1
-		temp_trianle2A3.triangle_infront_p1 = temp_trianle3A1
-		temp_trianle2A3.triangle_infront_p3 = temp_trianle1A2
-		temp_trianle3A1.triangle_infront_p1 = temp_trianle1A2
-		temp_trianle3A1.triangle_infront_p3 = temp_trianle2A3
-
-		temp_trianle1A2.triangle_infront_p2 = triangle.triangle_infront_p3
-		temp_trianle2A3.triangle_infront_p2 = triangle.triangle_infront_p1
-		temp_trianle3A1.triangle_infront_p2 = triangle.triangle_infront_p2
-
-		self.triangles.extend([temp_trianle1A2, temp_trianle2A3, temp_trianle3A1])
-		self.triangles.remove(triangle)
-
-	def plotDiagramm(self, Name=None):
+	def plotDiagramm(self, Name=None, unpad=None):
 		fig = plt.figure()
-		for triangle in self.triangles:
-			plt.plot([triangle.p1.x, triangle.p2.x, triangle.p3.x, triangle.p1.x],
-			         [triangle.p1.y, triangle.p2.y, triangle.p3.y, triangle.p1.y], linewidth=0.25)
-		plt.scatter(self.points[:, 0], self.points[:, 1], color='red', s=2.0)
+
+		def addRadilBias(triangle, unpad):
+			tt = Triangle(triangle.p1, triangle.p2, triangle.p3)  # temp triangle
+			x_avg = (tt.p1.x + tt.p2.x + tt.p3.x) / 3.0
+			y_avg = (tt.p1.y + tt.p2.y + tt.p3.y) / 3.0
+			p1_radial_angle = np.arctan2(y_avg - tt.p1.y, x_avg - tt.p1.x)
+			p2_radial_angle = np.arctan2(y_avg - tt.p2.y, x_avg - tt.p2.x)
+			p3_radial_angle = np.arctan2(y_avg - tt.p3.y, x_avg - tt.p3.x)
+			tt.p1.x = tt.p1.x + np.cos(p1_radial_angle) * unpad
+			tt.p1.y = tt.p1.y + np.sin(p1_radial_angle) * unpad
+			tt.p2.x = tt.p2.x + np.cos(p2_radial_angle) * unpad
+			tt.p2.y = tt.p2.y + np.sin(p2_radial_angle) * unpad
+			tt.p3.x = tt.p3.x + np.cos(p3_radial_angle) * unpad
+			tt.p3.y = tt.p3.y + np.sin(p3_radial_angle) * unpad
+			return (x_avg, y_avg), tt
+
+		if unpad is not None:
+			for triangle in self.triangles:
+				center, temp_tri = addRadilBias(triangle, unpad)
+				plt.plot([temp_tri.p1.x, temp_tri.p2.x, temp_tri.p3.x, temp_tri.p1.x],
+				         [temp_tri.p1.y, temp_tri.p2.y, temp_tri.p3.y, temp_tri.p1.y], linewidth=0.25)
+				plt.text(center[0], center[1], triangle.id, fontsize=8)
+		else:
+			for triangle in self.triangles:
+				plt.plot([triangle.p1.x, triangle.p2.x, triangle.p3.x, triangle.p1.x],
+				         [triangle.p1.y, triangle.p2.y, triangle.p3.y, triangle.p1.y], linewidth=0.25)
+
+		for point in self.points:
+			plt.scatter(point.x, point.y, color='red', s=2.0)
+			plt.text(point.x, point.y, point.id, fontsize=5)
 		if Name is not None:
 			plt.savefig(Name, dpi=600)
 		fig.show()

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from delanoy import DelaunoyTriangulation as dt
-from delanoy2 import Point, Triangle, DelaunoyTriangulation
+from delanoy import Point, Triangle, DelaunoyTriangulation
 
 if __name__ == "__main__":
 	# # print(pd.DataFrame(points))
