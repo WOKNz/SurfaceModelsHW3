@@ -1,7 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import copy
-
 
 class Point():
 	def __init__(self, x, y, id=None):
@@ -377,7 +375,7 @@ class DelaunoyTriangulation():
 		fig = plt.figure()
 
 		def addRadilBias(triangle, unpad):
-			tt = copy.deepcopy(triangle)  # temp triangle
+			tt = Triangle(triangle.p1, triangle.p2, triangle.p3)  # temp triangle
 			x_avg = (tt.p1.x + tt.p2.x + tt.p3.x) / 3.0
 			y_avg = (tt.p1.y + tt.p2.y + tt.p3.y) / 3.0
 			p1_radial_angle = np.arctan2(y_avg - tt.p1.y, x_avg - tt.p1.x)
