@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import copy
 
 class Point():
 	def __init__(self, x, y, id=None):
@@ -11,11 +12,11 @@ class Point():
 		if self.id is None:
 			return '(' + str(self.x) + ',' + str(self.y) + ')'
 		else:
-			return str(self.id) + ' (' + str(self.x) + ',' + str(self.y) + ')'
+			return str(self.id) + ' (' + str(round(self.x, 2)) + ',' + str(round(self.y, 2)) + ')'
 
 	@staticmethod
 	def npArrayToListOfPoints(points):
-		id_index = 0
+		id_index = 1
 		temp_list = []
 		if points is None:
 			return
@@ -162,7 +163,7 @@ class Triangle():
 				return ot.p1
 			if ot.p2 is not self.p2 and ot.p2 is not self.p3:
 				return ot.p2
-			if ot.p3 is not self.p2 and ot.p2 is not self.p3:
+			if ot.p3 is not self.p2 and ot.p3 is not self.p3:
 				return ot.p3
 
 		op = oposite(self)
@@ -178,8 +179,8 @@ class Triangle():
 			if det > 0:
 				return True
 			elif det == 0:
-				print('The ', self.__str__(), ' have no area, all points on same line')
-				return True
+				# print('The ', self.__str__(), ' have no area, all points on same line')
+				return False
 			else:
 				return False
 
@@ -307,6 +308,10 @@ class DelaunoyTriangulation():
 		self.triangles.extend([temp_trianle1A2, temp_trianle2A3, temp_trianle3A1])
 		self.triangles.remove(triangle)
 
+	# temp_trianle1A2.isFlip(pointA)
+	# temp_trianle1A2.isFlip(pointA)
+	# temp_trianle1A2.isFlip(pointA)
+
 	def fixTriangulation(self):
 		stop = 1
 		while stop > 0:
@@ -314,11 +319,11 @@ class DelaunoyTriangulation():
 			# self.plotDiagramm(0.2)
 			for triangle in self.triangles:
 				stop = stop + triangle.isFlip(triangle.p1)
-				# self.plotDiagramm(0.2)
+				# self.plotDiagramm(limits=[31.5,29,86.5,84.4])
 				stop = stop + triangle.isFlip(triangle.p2)
-				# self.plotDiagramm(0.2)
+				# self.plotDiagramm(limits=[31.5,29,86.5,84.4])
 				stop = stop + triangle.isFlip(triangle.p3)
-		# self.plotDiagramm(0.2)
+			# self.plotDiagramm(limits=[31.5,29,86.5,84.4])
 
 	@staticmethod
 	def isInsideTriangle(point, triangle):
@@ -371,11 +376,11 @@ class DelaunoyTriangulation():
 					triangles_to_keep.append(self.triangles[i])
 		self.triangles = triangles_to_keep
 
-	def plotDiagramm(self, Name=None, unpad=None):
+	def plotDiagramm(self, Name=None, unpad=None, limits=None):
 		fig = plt.figure()
 
 		def addRadilBias(triangle, unpad):
-			tt = Triangle(triangle.p1, triangle.p2, triangle.p3)  # temp triangle
+			tt = Triangle(copy.copy(triangle.p1), copy.copy(triangle.p2), copy.copy(triangle.p3))  # temp triangle
 			x_avg = (tt.p1.x + tt.p2.x + tt.p3.x) / 3.0
 			y_avg = (tt.p1.y + tt.p2.y + tt.p3.y) / 3.0
 			p1_radial_angle = np.arctan2(y_avg - tt.p1.y, x_avg - tt.p1.x)
@@ -395,14 +400,23 @@ class DelaunoyTriangulation():
 				plt.plot([temp_tri.p1.x, temp_tri.p2.x, temp_tri.p3.x, temp_tri.p1.x],
 				         [temp_tri.p1.y, temp_tri.p2.y, temp_tri.p3.y, temp_tri.p1.y], linewidth=0.25)
 				plt.text(center[0], center[1], triangle.id, fontsize=8)
+			for point in self.points:
+				plt.scatter(point.x, point.y, color='red', s=2.0)
+				plt.text(point.x, point.y, point.id, fontsize=5)
 		else:
 			for triangle in self.triangles:
 				plt.plot([triangle.p1.x, triangle.p2.x, triangle.p3.x, triangle.p1.x],
-				         [triangle.p1.y, triangle.p2.y, triangle.p3.y, triangle.p1.y], linewidth=0.25)
+				         [triangle.p1.y, triangle.p2.y, triangle.p3.y, triangle.p1.y], linewidth=0.20)
+			for point in self.points:
+				plt.scatter(point.x, point.y, color='red', s=0.2)
+				plt.text(point.x, point.y, point.id, fontsize=4)
 
-		for point in self.points:
-			plt.scatter(point.x, point.y, color='red', s=2.0)
-			plt.text(point.x, point.y, point.id, fontsize=5)
 		if Name is not None:
 			plt.savefig(Name, dpi=600)
+		if limits is not None:
+			plt.xlim(right=limits[0])  # xmax is your value
+			plt.xlim(left=limits[1])  # xmin is your value
+			plt.ylim(top=limits[2])  # ymax is your value
+			plt.ylim(bottom=limits[3])  # ymin is your value
+
 		fig.show()

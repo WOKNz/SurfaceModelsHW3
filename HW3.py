@@ -6,4 +6,14 @@ from delanoy import DelaunoyTriangulation
 if __name__ == "__main__":
 	points_np = np.genfromtxt('data/data3.xyz')  # (X,Y,Z)
 	delaunoy3 = DelaunoyTriangulation(points_np)
-	delaunoy3.plotDiagramm(unpad=0.1, Name='data_triangulated_delunoy.png')
+	# delaunoy3.plotDiagramm(Name='data_triangulated_delunoy.png')
+	delaunoy3.plotDiagramm('test.png')
+
+	from scipy.spatial import Delaunay
+	import matplotlib.pyplot as plt
+
+	# points_np = points_np[[183,176,163,156,143,137,123,102,95,116,136,144,155],:]
+	tri = Delaunay(points_np[:, 0:2])
+	plt.triplot(points_np[:, 0], points_np[:, 1], tri.simplices)
+	plt.plot(points_np[:, 0], points_np[:, 1], 'o')
+	plt.show()
