@@ -70,6 +70,8 @@ class Triangle():
 
 		def updateInFrontOfInfrontTriangle(self, point_str, triangle_to_set):
 			if point_str == 'p1':
+				if self.tri_p1 is None:
+					return
 				if self.tri_p1.p1 is not self.p2 and \
 						self.tri_p1.p1 is not self.p3:
 					self.tri_p1.tri_p1 = triangle_to_set
@@ -82,6 +84,8 @@ class Triangle():
 				else:
 					print('Failed to update infront of infront triangle')
 			if point_str == 'p2':
+				if self.tri_p2 is None:
+					return
 				if self.tri_p2.p1 is not self.p1 and \
 						self.tri_p2.p1 is not self.p3:
 					self.tri_p2.tri_p1 = triangle_to_set
@@ -94,6 +98,8 @@ class Triangle():
 				else:
 					print('Failed to update infront of infront triangle')
 			if point_str == 'p3':
+				if self.tri_p3 is None:
+					return
 				if self.tri_p3.p1 is not self.p2 and \
 						self.tri_p3.p1 is not self.p1:
 					self.tri_p3.tri_p1 = triangle_to_set
@@ -129,6 +135,56 @@ class Triangle():
 		thisTri.p3 = otherTri.p1
 		otherTri.p2 = thisTri.p1
 
+	def isInCircle(self, point):
+
+		def oposite(self):  # Repeated code, make sure you use after match()
+			ot = self.tri_p1  # Opposite Triangle
+			if ot.p1 is not self.p2 and ot.p1 is not self.p3:
+				return ot.p1
+			if ot.p2 is not self.p2 and ot.p2 is not self.p3:
+				return ot.p2
+			if ot.p3 is not self.p2 and ot.p2 is not self.p3:
+				return ot.p3
+
+		op = oposite(self)
+
+		if op is None:
+			return False
+
+		def ccw(self):
+			temp_mat = np.array([[self.p2.x, self.p2.y, 1],
+			                     [self.p1.x, self.p1.y, 1],
+			                     [self.p3.x, self.p3.y, 1]])
+			det = np.linalg.det(temp_mat)
+			if det > 0:
+				return True
+			elif det == 0:
+				print('The ', self.__str__(), ' have no area, all points on same line')
+				return True
+			else:
+				return False
+
+		temp_mat = None
+		if ccw(self):
+			temp_mat = np.array([[self.p2.x, self.p2.y, self.p2.x ** 2 + self.p2.y ** 2, 1],
+			                     [self.p1.x, self.p1.y, self.p1.x ** 2 + self.p1.y ** 2, 1],
+			                     [self.p3.x, self.p3.y, self.p3.x ** 2 + self.p3.y ** 2, 1],
+			                     [op.x, op.y, op.x ** 2 + op.y ** 2, 1]])
+		else:
+			temp_mat = np.array([[self.p3.x, self.p3.y, self.p3.x ** 2 + self.p3.y ** 2, 1],
+			                     [self.p1.x, self.p1.y, self.p1.x ** 2 + self.p1.y ** 2, 1],
+			                     [self.p2.x, self.p2.y, self.p2.x ** 2 + self.p2.y ** 2, 1],
+			                     [op.x, op.y, op.x ** 2 + op.y ** 2, 1]])
+
+		if np.linalg.det(temp_mat) > 0:
+			return True
+		else:
+			return False
+
+	def isFlip(self, point):
+		self.match(point)
+		if self.isInCircle(point):
+			self.flip(point)
 
 class DelaunoyTriangulation():
 	def __init__(self, points):
@@ -167,13 +223,14 @@ class DelaunoyTriangulation():
 			tt.p2.y = tt.p2.y + np.sin(p2_radial_angle) * unpad
 			tt.p3.x = tt.p3.x + np.cos(p3_radial_angle) * unpad
 			tt.p3.y = tt.p3.y + np.sin(p3_radial_angle) * unpad
-			return tt
+			return (x_avg, y_avg), tt
 
 		if unpad is not None:
 			for triangle in self.triangles:
-				temp_tri = addRadilBias(triangle, unpad)
+				center, temp_tri = addRadilBias(triangle, unpad)
 				plt.plot([temp_tri.p1.x, temp_tri.p2.x, temp_tri.p3.x, temp_tri.p1.x],
 				         [temp_tri.p1.y, temp_tri.p2.y, temp_tri.p3.y, temp_tri.p1.y], linewidth=0.25)
+				plt.text(center[0], center[1], triangle.id, fontsize=8)
 		else:
 			for triangle in self.triangles:
 				plt.plot([triangle.p1.x, triangle.p2.x, triangle.p3.x, triangle.p1.x],

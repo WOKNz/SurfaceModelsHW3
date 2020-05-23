@@ -44,11 +44,18 @@ if __name__ == "__main__":
 	delaunoy1.triangles = [tri1, tri2, tri3, tri4, tri5, tri6]
 	delaunoy1.plotDiagramm(unpad=0.1)
 
-	#    Testing Match Function
-	tri4.match(p2)
-	#    Testing Flip Function
+	##    Testing Match Function
+	# tri4.match(p2)
 
-	tri3.flip(p4)
+	##    Testing Flip Function
+	# tri3.flip(p4)
+
+	# #testing isInCircle()
+	# tri4.match(p6)
+	# print(tri4.isInCircle(p6))
+
+	# # Testing isFlip()
+	# tri3.isFlip(p4)
 
 	# Graph after manipulating
 	delaunoy2 = DelaunoyTriangulation(None)
