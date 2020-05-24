@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import copy
 
 class Point():
 	def __init__(self, x, y, id=None):
@@ -12,11 +11,12 @@ class Point():
 		if self.id is None:
 			return '(' + str(self.x) + ',' + str(self.y) + ')'
 		else:
-			return str(self.id) + ' (' + str(round(self.x, 2)) + ',' + str(round(self.y, 2)) + ')'
+			return str(self.id)
+		# return str(self.id) + ' (' + str(self.x) + ',' + str(self.y) + ')'
 
 	@staticmethod
 	def npArrayToListOfPoints(points):
-		id_index = 1
+		id_index = 0
 		temp_list = []
 		if points is None:
 			return
@@ -163,7 +163,7 @@ class Triangle():
 				return ot.p1
 			if ot.p2 is not self.p2 and ot.p2 is not self.p3:
 				return ot.p2
-			if ot.p3 is not self.p2 and ot.p3 is not self.p3:
+			if ot.p3 is not self.p2 and ot.p2 is not self.p3:
 				return ot.p3
 
 		op = oposite(self)
@@ -179,8 +179,8 @@ class Triangle():
 			if det > 0:
 				return True
 			elif det == 0:
-				# print('The ', self.__str__(), ' have no area, all points on same line')
-				return False
+				print('The ', self.__str__(), ' have no area, all points on same line')
+				return True
 			else:
 				return False
 
@@ -269,9 +269,9 @@ class DelaunoyTriangulation():
 		y_c = np.average(points[:, 1])
 
 		# Corners of covering triangle
-		self.big_tri_p1 = Point(x_c + 3 * M, y_c, id='B1')
-		self.big_tri_p2 = Point(x_c, y_c + 3 * M, id='B2')
-		self.big_tri_p3 = Point(x_c - 3 * M, y_c - 3 * M, id='B3')
+		self.big_tri_p1 = Point(x_c + 20 * M, y_c, id='B1')
+		self.big_tri_p2 = Point(x_c, y_c + 20 * M, id='B2')
+		self.big_tri_p3 = Point(x_c - 20 * M, y_c - 20 * M, id='B3')
 		self.triangles = [Triangle(self.big_tri_p1,
 		                           self.big_tri_p2,
 		                           self.big_tri_p3,
@@ -305,25 +305,29 @@ class DelaunoyTriangulation():
 		temp_trianle2A3.updateInFrontOfInfrontTriangle('p2', temp_trianle2A3)
 		temp_trianle3A1.updateInFrontOfInfrontTriangle('p2', temp_trianle3A1)
 
+		temp_trianle1A2.id = 'T' + str(self.j + 1)
+		temp_trianle2A3.id = 'T' + str(self.j + 2)
+		temp_trianle3A1.id = 'T' + str(self.j + 3)
+		self.j = self.j + 3
+
 		self.triangles.extend([temp_trianle1A2, temp_trianle2A3, temp_trianle3A1])
 		self.triangles.remove(triangle)
-
-	# temp_trianle1A2.isFlip(pointA)
-	# temp_trianle1A2.isFlip(pointA)
-	# temp_trianle1A2.isFlip(pointA)
 
 	def fixTriangulation(self):
 		stop = 1
 		while stop > 0:
 			stop = 0
-			# self.plotDiagramm(0.2)
+			# self.plotDiagramm(limits=[2.5,-3,2.5,-2.5])
 			for triangle in self.triangles:
+				# self.plotDiagramm(limits=[2.5,-3,2.5,-2.5])
 				stop = stop + triangle.isFlip(triangle.p1)
-				# self.plotDiagramm(limits=[31.5,29,86.5,84.4])
+				# self.plotDiagramm(limits=[2.5,-3,2.5,-2.5])
 				stop = stop + triangle.isFlip(triangle.p2)
-				# self.plotDiagramm(limits=[31.5,29,86.5,84.4])
+				# self.plotDiagramm(limits=[2.5,-3,2.5,-2.5])
 				stop = stop + triangle.isFlip(triangle.p3)
-			# self.plotDiagramm(limits=[31.5,29,86.5,84.4])
+				# self.plotDiagramm(limits=[2.5,-3,2.5,-2.5])
+				if stop > 0:
+					break
 
 	@staticmethod
 	def isInsideTriangle(point, triangle):
@@ -380,7 +384,7 @@ class DelaunoyTriangulation():
 		fig = plt.figure()
 
 		def addRadilBias(triangle, unpad):
-			tt = Triangle(copy.copy(triangle.p1), copy.copy(triangle.p2), copy.copy(triangle.p3))  # temp triangle
+			tt = Triangle(triangle.p1, triangle.p2, triangle.p3)  # temp triangle
 			x_avg = (tt.p1.x + tt.p2.x + tt.p3.x) / 3.0
 			y_avg = (tt.p1.y + tt.p2.y + tt.p3.y) / 3.0
 			p1_radial_angle = np.arctan2(y_avg - tt.p1.y, x_avg - tt.p1.x)
@@ -399,18 +403,15 @@ class DelaunoyTriangulation():
 				center, temp_tri = addRadilBias(triangle, unpad)
 				plt.plot([temp_tri.p1.x, temp_tri.p2.x, temp_tri.p3.x, temp_tri.p1.x],
 				         [temp_tri.p1.y, temp_tri.p2.y, temp_tri.p3.y, temp_tri.p1.y], linewidth=0.25)
-				plt.text(center[0], center[1], triangle.id, fontsize=8)
-			for point in self.points:
-				plt.scatter(point.x, point.y, color='red', s=2.0)
-				plt.text(point.x, point.y, point.id, fontsize=5)
+				plt.text(center[0], center[1], triangle.id, fontsize=5)
 		else:
 			for triangle in self.triangles:
 				plt.plot([triangle.p1.x, triangle.p2.x, triangle.p3.x, triangle.p1.x],
-				         [triangle.p1.y, triangle.p2.y, triangle.p3.y, triangle.p1.y], linewidth=0.20)
-			for point in self.points:
-				plt.scatter(point.x, point.y, color='red', s=0.2)
-				plt.text(point.x, point.y, point.id, fontsize=4)
+				         [triangle.p1.y, triangle.p2.y, triangle.p3.y, triangle.p1.y], linewidth=0.25)
 
+		for point in self.points:
+			plt.scatter(point.x, point.y, color='red', s=0.2)
+		# plt.text(point.x, point.y, point.id, fontsize=9)
 		if Name is not None:
 			plt.savefig(Name, dpi=600)
 		if limits is not None:
@@ -418,5 +419,4 @@ class DelaunoyTriangulation():
 			plt.xlim(left=limits[1])  # xmin is your value
 			plt.ylim(top=limits[2])  # ymax is your value
 			plt.ylim(bottom=limits[3])  # ymin is your value
-
 		fig.show()
