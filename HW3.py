@@ -4,7 +4,7 @@ from delanoy import DelaunoyTriangulation as dt
 from delanoy import DelaunoyTriangulation
 
 if __name__ == "__main__":
-	points_np = np.genfromtxt('data/data.xyz')  # (X,Y,Z)
+	points_np = np.genfromtxt('data/data5.xyz')  # (X,Y,Z)
 	# points_np = np.random.randn(5,2)
 	# np.savetxt('last_random_test2.xyz',points_np)
 	delaunoy3 = DelaunoyTriangulation(points_np)

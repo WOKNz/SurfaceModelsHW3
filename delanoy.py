@@ -203,6 +203,8 @@ class Triangle():
 
 	def isFlip(self, point):
 		self.match(point)
+		if self.tri_p1 is None:
+			return 0
 		if self.isInCircle(point):
 			self.flip(point)
 			return 1
@@ -325,9 +327,9 @@ class DelaunoyTriangulation():
 				stop = stop + triangle.isFlip(triangle.p2)
 				# self.plotDiagramm(limits=[2.5,-3,2.5,-2.5])
 				stop = stop + triangle.isFlip(triangle.p3)
-				# self.plotDiagramm(limits=[2.5,-3,2.5,-2.5])
-				if stop > 0:
-					break
+			# self.plotDiagramm(limits=[2.5,-3,2.5,-2.5])
+			# if stop > 0:
+			# 	break
 
 	@staticmethod
 	def isInsideTriangle(point, triangle):
