@@ -202,14 +202,23 @@ class Triangle():
 			return False
 
 	def isFlip(self, point):
+		temp_point = point
 		self.match(point)
 		if self.tri_p1 is None:
 			return 0
+		new_base_tri = self.tri_p1
+		new_point_1 = self.p2
+		new_point_2 = self.p3
 		if self.isInCircle(point):
 			self.flip(point)
-			return 1
 		else:
-			return 0
+			return
+		new_base_tri.isFlip(new_point_2)
+		new_base_tri.isFlip(new_point_1)
+
+	# 	return 1
+	# else:
+	# 	return 0
 
 	def updateInFrontOfInfrontTriangle(self, point_str, triangle_to_set):  # Repeated Code
 		if point_str == 'p1':
@@ -282,7 +291,7 @@ class DelaunoyTriangulation():
 		for point in self.points:
 			self.split(point, self.inWhichTriangle(point))
 
-		self.fixTriangulation()
+		# self.fixTriangulation()
 		self.cleanOutter()
 
 	def split(self, pointA, triangle):
@@ -314,6 +323,9 @@ class DelaunoyTriangulation():
 
 		self.triangles.extend([temp_trianle1A2, temp_trianle2A3, temp_trianle3A1])
 		self.triangles.remove(triangle)
+		self.triangles[-1].isFlip(pointA)
+		self.triangles[-2].isFlip(pointA)
+		self.triangles[-3].isFlip(pointA)
 
 	def fixTriangulation(self):
 		stop = 1
