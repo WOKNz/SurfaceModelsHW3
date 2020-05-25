@@ -2,9 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class Point():
-	def __init__(self, x, y, id=None):
+	def __init__(self, x, y, z, id=None):
 		self.x = x
 		self.y = y
+		self.z = z
 		self.id = id
 
 	def __str__(self):
@@ -20,9 +21,14 @@ class Point():
 		temp_list = []
 		if points is None:
 			return
-		for row in range(points.shape[0]):
-			temp_list.append(Point(points[row, 0], points[row, 1], id='P' + str(id_index)))
-			id_index = id_index + 1
+		if points.shape[1] == 2:
+			for row in range(points.shape[0]):
+				temp_list.append(Point(points[row, 0], points[row, 1], None, str(id_index)))
+				id_index = id_index + 1
+		if points.shape[1] == 3:
+			for row in range(points.shape[0]):
+				temp_list.append(Point(points[row, 0], points[row, 1], points[row, 2], str(id_index)))
+				id_index = id_index + 1
 		return temp_list
 
 
@@ -271,9 +277,9 @@ class DelaunoyTriangulation():
 		y_c = np.average(points[:, 1])
 
 		# Corners of covering triangle
-		self.big_tri_p1 = Point(x_c + 20 * M, y_c, id='B1')
-		self.big_tri_p2 = Point(x_c, y_c + 20 * M, id='B2')
-		self.big_tri_p3 = Point(x_c - 20 * M, y_c - 20 * M, id='B3')
+		self.big_tri_p1 = Point(x_c + 20 * M, y_c, 0, id='B1')
+		self.big_tri_p2 = Point(x_c, y_c + 20 * M, 0, id='B2')
+		self.big_tri_p3 = Point(x_c - 20 * M, y_c - 20 * M, 0, id='B3')
 		self.triangles = [Triangle(self.big_tri_p1,
 		                           self.big_tri_p2,
 		                           self.big_tri_p3,
@@ -284,6 +290,8 @@ class DelaunoyTriangulation():
 
 		self.fixTriangulation()
 		self.cleanOutter()
+
+		self.saveTriangles('triangles_data.xyz')
 
 	def split(self, pointA, triangle):
 		if triangle is None:
@@ -422,3 +430,9 @@ class DelaunoyTriangulation():
 			plt.ylim(top=limits[2])  # ymax is your value
 			plt.ylim(bottom=limits[3])  # ymin is your value
 		fig.show()
+
+	def saveTriangles(self, name):
+		temp_np = np.zeros((len(self.triangles), 3), dtype=int)
+		for i in range(len(self.triangles)):
+			temp_np[i, :] = np.array([self.triangles[i].p1.id, self.triangles[i].p2.id, self.triangles[i].p3.id])
+		np.savetxt(name, temp_np, fmt='%i')
