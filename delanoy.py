@@ -2,7 +2,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class Point():
+	"""
+	Point Obejct 3 dimensions and id
+	"""
+
 	def __init__(self, x, y, z, id=None):
+		"""
+
+		:param x: value x of the point
+		:type x: float
+		:param y:value y of the point
+		:type y: float
+		:param z:value z of the point
+		:type z: float
+		:param id: The id of a point
+		:type id: str
+		"""
 		self.x = x
 		self.y = y
 		self.z = z
@@ -17,6 +32,13 @@ class Point():
 
 	@staticmethod
 	def npArrayToListOfPoints(points):
+		"""
+		Convert ndarray to list of Points
+		:param points: array of points (x,y,z)
+		:type points:  ndarray
+		:return: list of Point objects
+		:rtype: list
+		"""
 		id_index = 0
 		temp_list = []
 		if points is None:
@@ -31,8 +53,30 @@ class Point():
 				id_index = id_index + 1
 		return temp_list
 
+
 class Triangle():
+	"""
+	Triangle class hold triangle data
+	"""
+
 	def __init__(self, p1, p2, p3, tri_p1=None, tri_p2=None, tri_p3=None, id=None):
+		"""
+
+		:param p1: Corner 1 of a triangle
+		:type p1: Point
+		:param p2: Corner 2 of a triangle
+		:type p2: Point
+		:param p3: Corner 3 of a triangle
+		:type p3: Point
+		:param tri_p1: Triangle that in front of p1
+		:type tri_p1: Triangle
+		:param tri_p2: Triangle that in front of p1
+		:type tri_p2: Triangle
+		:param tri_p3: Triangle that in front of p1
+		:type tri_p3: Triangle
+		:param id: Id of a triangle
+		:type id: str
+		"""
 		self.p1 = p1
 		self.p2 = p2
 		self.p3 = p3
@@ -54,8 +98,21 @@ class Triangle():
 			       str(self.p3.id) + ']'
 
 	def match(self, point):
+		"""
+		Function that matches the corners of two triangles at specific way (Look in HW3.pdf)
+		:param point: Point that have the second triangle as in front triangle
+		:type point: Point
+		:rtype: None
+		"""
 
 		def oposite(self):
+			"""
+			Function that searches in second triangle the point that opposite to give point in first triangle
+			:param self: origin triangle
+			:type self: Triangle
+			:return: point that in front
+			:rtype: Point
+			"""
 			if self.tri_p1 is None:
 				return None
 			ot = self.tri_p1  # Opposite Triangle
@@ -90,8 +147,24 @@ class Triangle():
 				self.tri_p1.tri_p2, self.tri_p1.tri_p3 = self.tri_p1.tri_p3, self.tri_p1.tri_p2
 
 	def flip(self, point):
+		"""
+		Flips two triangles
+		:param point: point in front of infront triangle (point in origin triangle)
+		:type point:  Point
+		:rtype: None
+		"""
 
 		def updateInFrontOfInfrontTriangle(self, point_str, triangle_to_set):
+			"""
+			Updates the references in infront triangle
+			:param self: origin triangle
+			:type self: Triangle
+			:param point_str: origin point
+			:type point_str: Point
+			:param triangle_to_set: in front triangle
+			:type triangle_to_set: Triangle
+			:rtype: None
+			"""
 			if point_str == 'p1':
 				if self.tri_p1 is None:
 					return
@@ -150,6 +223,7 @@ class Triangle():
 		c = thisTri.tri_p2
 		d = otherTri.tri_p2
 
+		# Look in HW3.pdf for the algorithm
 		thisTri.tri_p1 = b
 		thisTri.tri_p2 = otherTri
 		otherTri.tri_p1 = c
@@ -159,6 +233,13 @@ class Triangle():
 		otherTri.p2 = thisTri.p1
 
 	def isInCircle(self, point):
+		"""
+		Checks if the point is inside covering circle io the triangle
+		:param point: in front point
+		:type point: Point
+		:return: True = inside or on the line of the circle , False = outside
+		:rtype: bool
+		"""
 
 		def oposite(self):  # Repeated code, make sure you use after match()
 			if self.tri_p1 is None:
@@ -177,6 +258,13 @@ class Triangle():
 			return False
 
 		def ccw(self):
+			"""
+			Checks if the points of the triangle is in ccw order
+			:param self: a triangle been checked
+			:type self: Triangle
+			:return: True = ccw or on the same line
+			:rtype: bool
+			"""
 			temp_mat = np.array([[self.p2.x, self.p2.y, 1],
 			                     [self.p1.x, self.p1.y, 1],
 			                     [self.p3.x, self.p3.y, 1]])
@@ -207,6 +295,13 @@ class Triangle():
 			return False
 
 	def isFlip(self, point):
+		"""
+		Function that calls for match() and checks if flip is needed
+		:param point: in front point
+		:type point: Point
+		:return: True = need to be fliped
+		:rtype: bool
+		"""
 		self.match(point)
 		if self.tri_p1 is None:
 			return 0
@@ -260,8 +355,18 @@ class Triangle():
 			else:
 				print('Failed to update infront of infront triangle')
 
+
 class DelaunoyTriangulation():
+	"""
+	Delanoy triangulation databse and relevant functions
+	"""
+
 	def __init__(self, points):
+		"""
+
+		:param points: list of points that need to be triangulated
+		:type points: list
+		"""
 		self.j = 0
 		self.points = Point.npArrayToListOfPoints(points)
 		self.triangles = None
@@ -291,15 +396,30 @@ class DelaunoyTriangulation():
 		self.fixTriangulation()
 		self.cleanOutter()
 
+	# Export
 	# self.saveTriangles('triangles_data.xyz')
 
 	def split(self, pointA, triangle):
+		"""
+		Splitting Triangle into three triangles
+
+		:param pointA: new point that splits
+		:type pointA: Point
+		:param triangle: relevant triangle that the point is inside
+		:type triangle: Triangle
+		:rtype: None
+		"""
+
+		# Empty case
 		if triangle is None:
 			return
+
+		# Creating three new triangles
 		temp_trianle1A2 = Triangle(triangle.p1, pointA, triangle.p2)
 		temp_trianle2A3 = Triangle(triangle.p2, pointA, triangle.p3)
 		temp_trianle3A1 = Triangle(triangle.p3, pointA, triangle.p1)
 
+		# adding proper properties
 		temp_trianle1A2.tri_p1 = temp_trianle2A3
 		temp_trianle1A2.tri_p3 = temp_trianle3A1
 		temp_trianle2A3.tri_p1 = temp_trianle3A1
@@ -320,10 +440,16 @@ class DelaunoyTriangulation():
 		temp_trianle3A1.id = 'T' + str(self.j + 3)
 		self.j = self.j + 3
 
+		# adding new triangles to the list
 		self.triangles.extend([temp_trianle1A2, temp_trianle2A3, temp_trianle3A1])
+		# removing the splited triangle
 		self.triangles.remove(triangle)
 
 	def fixTriangulation(self):
+		"""
+		Cheking if there is triangles to flip until there 0 to flip over the list
+		:rtype: None
+		"""
 		stop = 1
 		while stop > 0:
 			stop = 0
@@ -341,6 +467,16 @@ class DelaunoyTriangulation():
 
 	@staticmethod
 	def isInsideTriangle(point, triangle):
+		"""
+		Cheking if the point is inside the triangle
+
+		:param point: checked point
+		:type point: Point
+		:param triangle: checked triangle
+		:type triangle: Triangle
+		:return: True = inside
+		:rtype: bool
+		"""
 
 		def ccw(pA, pB, pC):  # Repeated code
 			temp_mat = np.array([[pA.x, pA.y, 1],
@@ -366,11 +502,22 @@ class DelaunoyTriangulation():
 			return False
 
 	def inWhichTriangle(self, point):
+		"""
+		Going over the list of triangle and checking if the point is inside
+		:param point: checked point
+		:type point: Point
+		:return: relevant triangle
+		:rtype: Triangle
+		"""
 		for triangle in self.triangles:
 			if DelaunoyTriangulation.isInsideTriangle(point, triangle):
 				return triangle
 
 	def cleanOutter(self):
+		"""
+		Goes over all triangles in the list and delete those who have covering triangle points
+		:rtype: None
+		"""
 		max_len = len(self.triangles)
 		triangles_to_keep = []
 
@@ -391,6 +538,16 @@ class DelaunoyTriangulation():
 		self.triangles = triangles_to_keep
 
 	def plotDiagramm(self, Name=None, unpad=None, limits=None):
+		"""
+		Plotting diagram of the triangles and points
+		:param Name: Name of the file if you want to save the plot
+		:type Name: str
+		:param unpad: Padding to the triangles (seperates them) 0.2 is good
+		:type unpad: float
+		:param limits: Limits of the plot
+		:type limits: list
+		:rtype: None
+		"""
 		fig = plt.figure()
 
 		def addRadilBias(triangle, unpad):
@@ -432,6 +589,12 @@ class DelaunoyTriangulation():
 		fig.show()
 
 	def saveTriangles(self, name):
+		"""
+		Exporting the triangles to .txt file (p1 ,p2 ,p3)
+		:param name: Name of the file to be saved
+		:type name: str
+		:return: saves file
+		"""
 		temp_np = np.zeros((len(self.triangles), 3), dtype=int)
 		for i in range(len(self.triangles)):
 			temp_np[i, :] = np.array([self.triangles[i].p1.id, self.triangles[i].p2.id, self.triangles[i].p3.id])
