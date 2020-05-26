@@ -31,7 +31,6 @@ class Point():
 				id_index = id_index + 1
 		return temp_list
 
-
 class Triangle():
 	def __init__(self, p1, p2, p3, tri_p1=None, tri_p2=None, tri_p3=None, id=None):
 		self.p1 = p1
@@ -285,13 +284,14 @@ class DelaunoyTriangulation():
 		                           self.big_tri_p3,
 		                           id='T0')]
 
+		# Splitting triangle that new point falls into f
 		for point in self.points:
 			self.split(point, self.inWhichTriangle(point))
 
 		self.fixTriangulation()
 		self.cleanOutter()
 
-		self.saveTriangles('triangles_data.xyz')
+	# self.saveTriangles('triangles_data.xyz')
 
 	def split(self, pointA, triangle):
 		if triangle is None:
