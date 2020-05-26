@@ -100,6 +100,7 @@ class Triangle():
 	def match(self, point):
 		"""
 		Function that matches the corners of two triangles at specific way (Look in HW3.pdf)
+
 		:param point: Point that have the second triangle as in front triangle
 		:type point: Point
 		:rtype: None
@@ -108,6 +109,7 @@ class Triangle():
 		def oposite(self):
 			"""
 			Function that searches in second triangle the point that opposite to give point in first triangle
+
 			:param self: origin triangle
 			:type self: Triangle
 			:return: point that in front
@@ -149,6 +151,7 @@ class Triangle():
 	def flip(self, point):
 		"""
 		Flips two triangles
+
 		:param point: point in front of infront triangle (point in origin triangle)
 		:type point:  Point
 		:rtype: None
@@ -157,6 +160,7 @@ class Triangle():
 		def updateInFrontOfInfrontTriangle(self, point_str, triangle_to_set):
 			"""
 			Updates the references in infront triangle
+
 			:param self: origin triangle
 			:type self: Triangle
 			:param point_str: origin point
@@ -235,6 +239,7 @@ class Triangle():
 	def isInCircle(self, point):
 		"""
 		Checks if the point is inside covering circle io the triangle
+
 		:param point: in front point
 		:type point: Point
 		:return: True = inside or on the line of the circle , False = outside
@@ -260,6 +265,7 @@ class Triangle():
 		def ccw(self):
 			"""
 			Checks if the points of the triangle is in ccw order
+
 			:param self: a triangle been checked
 			:type self: Triangle
 			:return: True = ccw or on the same line
@@ -297,6 +303,7 @@ class Triangle():
 	def isFlip(self, point):
 		"""
 		Function that calls for match() and checks if flip is needed
+
 		:param point: in front point
 		:type point: Point
 		:return: True = need to be fliped
@@ -365,6 +372,7 @@ class DelaunoyTriangulation():
 		"""
 
 		:param points: list of points that need to be triangulated
+
 		:type points: list
 		"""
 		self.j = 0
@@ -504,6 +512,7 @@ class DelaunoyTriangulation():
 	def inWhichTriangle(self, point):
 		"""
 		Going over the list of triangle and checking if the point is inside
+
 		:param point: checked point
 		:type point: Point
 		:return: relevant triangle
@@ -540,6 +549,7 @@ class DelaunoyTriangulation():
 	def plotDiagramm(self, Name=None, unpad=None, limits=None):
 		"""
 		Plotting diagram of the triangles and points
+
 		:param Name: Name of the file if you want to save the plot
 		:type Name: str
 		:param unpad: Padding to the triangles (seperates them) 0.2 is good
@@ -591,6 +601,7 @@ class DelaunoyTriangulation():
 	def saveTriangles(self, name):
 		"""
 		Exporting the triangles to .txt file (p1 ,p2 ,p3)
+
 		:param name: Name of the file to be saved
 		:type name: str
 		:return: saves file
